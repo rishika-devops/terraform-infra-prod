@@ -1,5 +1,6 @@
 module "roboshop" {
     source = "git::https://github.com/rishika-devops/terraform-vpc.git?ref=master"
+    cidr_block = var.cidr_block
     project_name = var.project_name
     environment = var.environment
     common_tags = var.common_tags
