@@ -1,0 +1,73 @@
+pipeline {
+    agent {
+        node {
+            label 'Agent-1'
+        }
+    }
+    environment {
+        GREETING = "hello jenkins"
+    }
+    options {
+        timeout(time: 1 , unit : 'HOURS')
+        disableConcurrentBuilds()
+        ansiColor('xterm')
+    }
+    parameters {
+        choice(name: 'ACTION', choices: ['YES','NO'], description: 'pick something')
+    }
+    stages {
+        stage('init') { 
+            steps {
+                sh """
+                  cd 01-vpc
+                  terraform init -reconfigure
+                """  
+            }
+        }
+        stage('plan') { 
+            steps {
+                sh """
+                  cd 01-vpc
+                  terraform plan 
+                """  
+            }
+        }
+        stage('apply') { 
+            input {
+                message "shall we continue?"
+                ok "yes, we should?"
+            }
+            steps {
+                sh """
+                  cd 01-vpc
+                  terraform apply -auto-approve
+                """  
+            }
+        }
+        stage('destroy') { 
+            input {
+                message "shall we continue?"
+                ok "yes, we should?"
+            }
+            steps {
+                sh """
+                  cd 01-vpc
+                  terraform destroy -auto-approve
+                """  
+            }
+        }
+    }
+    post {
+        always {
+            echo " i will always say hello again"
+        }
+        failure {
+            echo " this runs when pipeline is failed , used generally to send some alerts"
+        }
+        success {
+            echo " i will say hello when pipeline is success"
+        }
+    }
+}
+
+
